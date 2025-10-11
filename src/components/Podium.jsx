@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Placeholder from "./Placeholder";
 import PodiumBlock from "./PodiumBlock";
 
 /**
@@ -10,37 +9,47 @@ import PodiumBlock from "./PodiumBlock";
 export default function Podium({picks}) {
     const [stage, setStage] = useState(0);
     // 0 = hidden, 1 = show 3rd place, 2 = show 2nd place and 3 = show first place
+    const [isRevealing, setIsRevealing] = useState(false);
+    // For the podium
 
     const start = () => {
+        if (isRevealing) return;
+        setIsRevealing(true);
         setStage(1);
         setTimeout(() => setStage(2), 1100);
-        setTimeout(() => setStage(3), 2200);
+        setTimeout(() => {
+            setStage(3);
+            setTimeout(() => setIsRevealing(false), 200);
+        }, 2200);
     };
 
-    const reset = () => setStage(0);
+    const reset = () => {
+        setStage(0);
+        setIsRevealing(false);
+    }
 
     return (
         <div>
             <div className="controls">
-                <button className="btn primary" onClick={start}>Show Podium</button>
-                <button className="btn" onClick={reset}>Reset</button>
+                <button className="btn primary" onClick={start} disabled={isRevealing}>{stage > 0 ? "Replay Reveal" : "Show Podium"}</button>
+                <button className="btn" onClick={reset} disabled={stage === 0}>Reset</button>
             </div>
 
             {/* Podium layout is 2|1|3 */}
             <div className="podium">
                 {/* Second place reveal */}
-                {stage >= 2 ? (
-                    <PodiumBlock place={2} data={picks[2]} delay={0.15} />) : (<Placeholder heightClass="h2" />)
+                {stage >= 2 && (
+                    <PodiumBlock place={2} data={picks[2]} delay={0.15} />)
                 }
 
                 {/* First place reveal */}
-                {stage >= 3 ? (
-                    <PodiumBlock place={1} data={picks[1]} delay={0.3} />) : (<Placeholder heightClass="h1" />)
+                {stage >= 3 && (
+                    <PodiumBlock place={1} data={picks[1]} delay={0.3} />)
                 }
 
                 {/* Thrid place reveal */}
-                {stage >= 1 ? (
-                    <PodiumBlock place={3} data={picks[3]} delay={0.0} />) : (<Placeholder heightClass="h3" />)
+                {stage >= 1 && (
+                    <PodiumBlock place={3} data={picks[3]} delay={0.0} />)
                 }        
             </div>
 
