@@ -1,24 +1,61 @@
 :root { --brand: #e10600; }
 
-html, body, #root { height: 100%; margin: 0; font-family: system-ui, Arial, sans-serif; }
-.page { min-height: 100%; background: #f7f7f8; color: #111; padding: 24px; }
+/* Make the document fill the viewport and inherit our light background */
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+}
+body {
+  background: #f7f7f8;   /* so the whole screen is light, not just the .page area */
+  color: #111;
+}
 
-.header { display: flex; align-items: center; justify-content: space-between; max-width: 1000px; margin: 0 auto 24px; }
+/* Full-bleed app shell */
+.page {
+  min-height: 100vh;     /* fill vertical */
+  width: 100vw;          /* fill horizontal */
+  box-sizing: border-box;
+  background: transparent; /* body already has the light bg */
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;    /* avoid horizontal scrollbar on narrow screens */
+}
+
+/* Header/card span full width now */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin: 0 0 24px;
+}
 .title { font-weight: 800; font-size: 20px; letter-spacing: .2px; }
 .subtle { color: #6b7280; font-size: 12px; }
 
-.card { max-width: 1000px; margin: 0 auto 16px; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+.card {
+  width: 100%;
+  margin: 0 0 16px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  flex: 1 1 auto;        /* can expand if it's the only section */
+}
 
+/* Podium visuals (unchanged) */
 .controls { display: flex; gap: 8px; margin-bottom: 12px; }
-.btn { appearance: none; border: 1px solid #e5e7eb; background: #fff; color:#111; padding: 8px 12px; border-radius: 12px; cursor: pointer; }
+.btn { appearance: none; border: 1px solid #e5e7eb; background: #fff; color: #111; padding: 8px 12px; border-radius: 12px; cursor: pointer; }
 .btn.primary { background: #111; color: #fff; border-color: #111; }
 .btn:disabled { opacity: .6; cursor: not-allowed; }
 
-.podium { display: flex; align-items: flex-end; justify-content: center; gap: 12px; }
+.podium { display: flex; align-items: flex-end; justify-content: center; gap: 12px; min-height: 220px; }
 .block { width: 160px; border-radius: 16px 16px 0 0; border: 1px solid rgba(0,0,0,.15); display: flex; align-items: center; justify-content: center; text-align: center; box-shadow: inset 0 6px 18px rgba(0,0,0,.05); }
-.block.h1 { height: 220px; background: linear-gradient(#ffe480,#f7c93b); border-color: #e9b300; }  /* gold */
-.block.h2 { height: 160px; background: linear-gradient(#f1f5f9,#cbd5e1); border-color: #94a3b8; }  /* silver */
-.block.h3 { height: 120px; background: linear-gradient(#ffd9a6,#f0b86c); border-color: #d49b4a; }  /* bronze */
+.block.h1 { height: 220px; background: linear-gradient(#ffe480,#f7c93b); border-color: #e9b300; }
+.block.h2 { height: 160px; background: linear-gradient(#f1f5f9,#cbd5e1); border-color: #94a3b8; }
+.block.h3 { height: 120px; background: linear-gradient(#ffd9a6,#f0b86c); border-color: #d49b4a; }
 
 .place { font-size: 12px; color: #6b7280; margin-bottom: 4px; }
 .name { font-weight: 800; }
