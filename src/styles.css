@@ -1,51 +1,45 @@
 :root { --brand: #e10600; }
 
-/* Make the document fill the viewport and inherit our light background */
-html, body, #root {
-  height: 100%;
-  width: 100%;
-  margin: 0;
-}
-body {
-  background: #f7f7f8;   /* so the whole screen is light, not just the .page area */
-  color: #111;
-}
+*,
+*::before,
+*::after { box-sizing: border-box; }
 
-/* Full-bleed app shell */
+/* Page background */
+html, body, #root { min-height: 100%; margin: 0; width: 100%; }
+body { background: #f7f7f8; color: #111; }
+
+/* PAGE: centered content + uniform spacing */
 .page {
-  min-height: 100vh;     /* fill vertical */
-  width: 100vw;          /* fill horizontal */
-  box-sizing: border-box;
-  background: transparent; /* body already has the light bg */
-  padding: 24px;
+  min-height: 100dvh;
+  width: 100%;
+  padding-block: 24px;                       /* even top/bottom */
+  padding-inline: clamp(16px, 4vw, 32px);    /* responsive side gutters */
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;    /* avoid horizontal scrollbar on narrow screens */
+  align-items: center;                        /* center children */
+  gap: 24px;                                  /* uniform vertical rhythm */
+  overflow-x: clip;
 }
 
-/* Header/card span full width now */
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  margin: 0 0 24px;
-}
+/* Shared centered width for header & cards */
+.header, .card { width: 100%; max-width: 1200px; margin: 0 auto; }
+
+/* Header */
+.header { display: flex; align-items: center; justify-content: space-between; }
 .title { font-weight: 800; font-size: 20px; letter-spacing: .2px; }
 .subtle { color: #6b7280; font-size: 12px; }
 
+/* Card */
 .card {
-  width: 100%;
-  margin: 0 0 16px;
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 16px;
-  padding: 16px;
+  padding: 16px 24px;                         /* a bit more horizontal space */
   box-shadow: 0 1px 2px rgba(0,0,0,.04);
-  flex: 1 1 auto;        /* can expand if it's the only section */
+  flex: 0 0 auto;                              /* no stretch -> spacing stays even */
 }
 
-/* Podium visuals (unchanged) */
+/* Controls + podium visuals */
 .controls { display: flex; gap: 8px; margin-bottom: 12px; }
 .btn { appearance: none; border: 1px solid #e5e7eb; background: #fff; color: #111; padding: 8px 12px; border-radius: 12px; cursor: pointer; }
 .btn.primary { background: #111; color: #fff; border-color: #111; }
@@ -61,17 +55,86 @@ body {
 .name { font-weight: 800; }
 .code { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #374151; }
 
+/* Selects */
 .select-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
 .select-col { display: flex; flex-direction: column; gap: 6px; }
 .select-label { font-size: 12px; color: #6b7280; }
-.select {
-  appearance: none;
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  background: #fff;
-  color: #111;
-}
+.select { appearance: none; width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 12px; background: #fff; color: #111; }
 .helper { font-size: 12px; color: #6b7280; }
 
+/* Comparison grid (no inline styles) */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 900px) {
+  .compare-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 900px) {
+  /* ModelCompare grid collapses to one column on narrow screens */
+  .card > div[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Accents */
+:root {
+  --user-accent: #10b981;   /* teal/green */
+  --model-accent: #2563eb;  /* blue */
+}
+
+/* Panel wrappers */
+.panel { position: relative; overflow: hidden; }
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 auto;         /* right side stripe by default */
+  width: 6px;
+  background: currentColor;
+  opacity: .25;
+}
+
+/* User panel theme */
+.panel--user { color: var(--user-accent); }
+.panel--user.card {
+  border-color: color-mix(in srgb, var(--user-accent) 35%, #e5e7eb);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--user-accent) 6%, #ffffff) 0%, #ffffff 60%);
+}
+.panel--user .panel-title { color: #111; }
+.panel--user .badge {
+  background: color-mix(in srgb, var(--user-accent) 16%, #fff);
+  color: var(--user-accent);
+  border: 1px solid color-mix(in srgb, var(--user-accent) 35%, #e5e7eb);
+}
+.panel--user .btn.primary {
+  background: var(--user-accent);
+  border-color: var(--user-accent);
+}
+
+/* Model panel theme */
+.panel--model { color: var(--model-accent); }
+.panel--model.card {
+  border-color: color-mix(in srgb, var(--model-accent) 35%, #e5e7eb);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--model-accent) 6%, #ffffff) 0%, #ffffff 60%);
+}
+.panel--model .panel-title { color: #111; }
+.panel--model .badge {
+  background: color-mix(in srgb, var(--model-accent) 16%, #fff);
+  color: var(--model-accent);
+  border: 1px solid color-mix(in srgb, var(--model-accent) 35%, #e5e7eb);
+}
+.panel--model .btn.primary {
+  background: var(--model-accent);
+  border-color: var(--model-accent);
+}
+
+/* Small badge used in titles */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
