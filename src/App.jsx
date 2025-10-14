@@ -71,6 +71,14 @@ export default function App() {
           <button className="btn" onClick={clear}>Clear picks</button>
         </div>
       </section>
+      {/* Start lights above user reveal (purely visual) */}
+      <div className="start-lights">
+        <span className="light on" />
+        <span className="light on" />
+        <span className="light on" />
+        <span className="light on" />
+        <span className="light on" />
+      </div>
       <section className="card" style={{padding: 0}}>
         <ModelCompare
           userPicks={userPodium}
