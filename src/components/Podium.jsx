@@ -6,7 +6,7 @@ import PodiumBlock from "./PodiumBlock";
  * Needs to take in the top 3 driver names
  */
 
-export default function Podium({picks}) {
+export default function Podium({picks, label, setReveal}) {
     const [stage, setStage] = useState(0);
     // 0 = hidden, 1 = show 3rd place, 2 = show 2nd place and 3 = show first place
     const [isRevealing, setIsRevealing] = useState(false);
@@ -21,17 +21,19 @@ export default function Podium({picks}) {
             setStage(3);
             setTimeout(() => setIsRevealing(false), 200);
         }, 2200);
+        setReveal(true);
     };
 
     const reset = () => {
         setStage(0);
         setIsRevealing(false);
+        setReveal(false);
     }
 
     return (
         <div>
             <div className="controls">
-                <button className="btn primary" onClick={start} disabled={isRevealing}>{stage > 0 ? "Replay Reveal" : "Show Podium"}</button>
+                <button className="btn primary" onClick={start} disabled={isRevealing}>{stage > 0 ? "Replay Reveal" : `${label}`}</button>
                 <button className="btn" onClick={reset} disabled={stage === 0}>Reset</button>
             </div>
 

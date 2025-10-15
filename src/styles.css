@@ -155,8 +155,8 @@ body{ background: var(--bg); color: var(--text); }
   box-shadow: 0 0 10px rgba(161,0,0,.6), inset 0 0 0 2px rgba(255,255,255,.5);
 }
 .start-lights:hover .light{
-  background:#009d2f;
-  box-shadow: 0 0 10px rgba(0,141,19,.6), inset 0 0 0 2px rgba(255,255,255,.5);
+  background:#2c2c2c;
+  box-shadow: 0 0 10px rgba(21, 21, 21, 0.6), inset 0 0 0 2px rgba(255,255,255,.5);
 }
 
 /* Kerb stripe */
