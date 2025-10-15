@@ -3,6 +3,7 @@ import DriverSelect from "./components/DriverSelect";
 import { useCallback, useEffect, useState, useMemo } from "react";
 import ModelCompare from "./components/ModelCompare";
 import { fetchCurrentRoster } from "./api/ergast";
+import PastResultsPanel from "./components/PastResultsPanel";
 
 export default function App() {
 
@@ -114,6 +115,7 @@ export default function App() {
           onRefreshModel={generateMockModel}
         />
       </section>
+      <PastResultsPanel />
     </div>
   );
 }

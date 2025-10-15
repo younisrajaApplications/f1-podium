@@ -53,3 +53,68 @@ export async function fetchCurrentRoster() {
   // Sort by points desc (just nicer ordering in the dropdowns)
   return roster;
 }
+
+export async function fetchSeasons({ limit = 20 } = {}) {
+  // 1) Get total seasons 
+  const meta = await getJSON(`/seasons.json?limit=1&offset=0`);
+  const total = Number(meta?.MRData?.total || 0);
+
+  // 2) Start at the last page
+  const start = Math.max(0, total - limit);
+
+  // 3) Fetch just the last N seasons, then sort newest → oldest
+  const data = await getJSON(`/seasons.json?limit=${limit}&offset=${start}`);
+  const seasons = data?.MRData?.SeasonTable?.Seasons || [];
+  return seasons.map(s => s.season).sort((a, b) => Number(b) - Number(a));
+}
+
+// Season schedule
+export async function fetchSchedule(season) {
+  const data = await getJSON(`/${season}.json`);
+  const races = data?.MRData?.RaceTable?.Races || [];
+  return races.map( r => ({
+    round: r.round,
+    raceName: r.raceName,
+    circuit: r.Circuit?.circuitName || "",
+    locality: r.Circuit?.Location?.locality || "",
+    country: r.Circuit?.Location?.country || "",
+    date: r.date,
+  }));
+}
+
+// Race results for the season and round
+export async function fetchRaceResult(season, round) {
+  const data = await getJSON(`/${season}/${round}/results.json`);
+  const race = data?.MRData?.RaceTable?.Races?.[0];
+  const results = race?.Results || [];
+  // Top 3
+  const podium = results.slice(0, 3).map(r => ({
+    name: `${r.Driver?.givenName || ""} ${r.Driver?.familyName || ""}`.trim(),
+    code: r.Driver?.code || (r.Driver?.familyName || "___").slice(0, 3).toUpperCase(),
+    position: r.position,
+    constructor: r.Constructor?.name || "",
+    time: r.Time?.time || r.status,
+  }));
+  // Top 10
+  const top10 = results.slice(0, 10).map(r => ({
+    pos: r.position,
+    driver: `${r.Driver?.givenName || ""} ${r.Driver?.familyName || ""}`.trim(),
+    code: r.Driver?.code || "",
+    team: r.Constructor?.name || "",
+    status: r.Time?.time || r.status,
+    grid: r.grid,
+  }));
+  return {
+    meta: {
+      season,
+      round,
+      raceName: race?.raceName || "",
+      circuit: race?.Circuit?.circuitName || "",
+      date: race?.date || "",
+      locality: race?.Circuit?.Location?.locality || "",
+      country: race?.Circuit?.Location?.country || "",
+    },
+    podium,
+    top10,
+  };
+}
