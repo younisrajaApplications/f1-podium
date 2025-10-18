@@ -2,57 +2,18 @@ import "./styles.css";
 import DriverSelect from "./components/DriverSelect";
 import { useCallback, useEffect, useState, useMemo } from "react";
 import ModelCompare from "./components/ModelCompare";
-import { fetchCurrentRoster } from "./api/ergast";
 import PastResultsPanel from "./components/PastResultsPanel";
 import UpcomingRaceBar from "./components/UpcomingRaceBar";
+import { toPodiumShape, clear } from "./utils/podium";
+import { useRoster } from "./utils/roster";
 
 export default function App() {
 
-  //Live roster
-  const [roster, setRoster] = useState([]);
-  const [loadingRoster, setLoadingRoster] = useState(true);
-  const [rosterError, setRosterError] = useState("");
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        setLoadingRoster(true);
-        const live = await fetchCurrentRoster();
-        if (!cancelled) setRoster(live);
-      } catch (err) {
-        console.error(err);
-        if (!cancelled) {
-          setRosterError(
-            "Couldn’t fetch the current drivers. Using a tiny fallback list."
-          );
-          // Minimal fallback so the UI is usable offline
-          setRoster([
-            { id: "ver", name: "Max Verstappen", code: "VER", team: "Red Bull" },
-            { id: "nor", name: "Lando Norris", code: "NOR", team: "McLaren" },
-            { id: "lec", name: "Charles Leclerc", code: "LEC", team: "Ferrari" },
-            { id: "ham", name: "Lewis Hamilton", code: "HAM", team: "Mercedes" },
-            { id: "rus", name: "George Russell", code: "RUS", team: "Mercedes" },
-          ]);
-        }
-      } finally {
-        if (!cancelled) setLoadingRoster(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
+  const {roster, loadingRoster, rosterError, refresh} = useRoster();
+  
   //Picks for the different positions
-
   const [picks, setPicks] = useState({1: null, 2: null, 3: null,});
-
-  const toPodiumShape = (src) => ({
-    1: src[1] ? { name: src[1].name, code: src[1].code } : null,
-    2: src[2] ? { name: src[2].name, code: src[2].code } : null,
-    3: src[3] ? { name: src[3].name, code: src[3].code } : null,
-  });
 
   const userPodium = toPodiumShape(picks);
 
@@ -85,8 +46,6 @@ export default function App() {
     generateMockModel();
   }, [generateMockModel]);
 
-  const clear = () => setPicks({1: null, 2: null, 3: null,});
-
   return (
     <div className="page">
       <header className="header">
@@ -98,7 +57,7 @@ export default function App() {
         <h3 style={{ margin: "0 0 12px" }}>Choose Your Podium</h3>
         <DriverSelect roster={roster} picks={picks} setPicks={setPicks} />
         <div className="controls">
-          <button className="btn" onClick={clear}>Clear picks</button>
+          <button className="btn" onClick={() => clear(setPicks)}>Clear picks</button>
         </div>
       </section>
       {/* Start lights above user reveal (purely visual) */}
