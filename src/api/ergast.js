@@ -118,3 +118,29 @@ export async function fetchRaceResult(season, round) {
     top10,
   };
 }
+
+// Function to get the upcoming race details
+export async function fetchUpcomingRace() {
+  const data = await getJSON(`/current/next.json`);
+  const race = data?.MRData?.RaceTable?.Races?.[0];
+  if (!race) return null;
+
+  const qualifiers = race.Qualifying || {};
+  const toIso = (d, t) => {
+    if (!d) return null;
+    // If time is missing, assume noon UTC so it's comparable and displayable
+    const hhmmss = t ? t : "12:00:00Z";
+    return `${d}T${hhmmss}`.replace("Z", "Z");
+  };
+
+  return {
+    raceId: `${race.season}-${race.round}`,     // e.g., "2025-17"
+    season: Number(race.season),
+    round: Number(race.round),
+    name: race.raceName,
+    country: race.Circuit?.Location?.country || "",
+    locality: race.Circuit?.Location?.locality || "",
+    raceStart: toIso(race.date, race.time),     // may be null if API omits time
+    qualifiersStart: toIso(qualifiers.date, qualifiers.time),  // may be null
+  };
+}

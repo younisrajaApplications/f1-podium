@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, useMemo } from "react";
 import ModelCompare from "./components/ModelCompare";
 import { fetchCurrentRoster } from "./api/ergast";
 import PastResultsPanel from "./components/PastResultsPanel";
+import UpcomingRaceBar from "./components/UpcomingRaceBar";
 
 export default function App() {
 
@@ -90,7 +91,7 @@ export default function App() {
     <div className="page">
       <header className="header">
         <div className="title">F1 Podium Predictor</div>
-        <div className="subtle">Step 4 - Picks From Current Roster (Fourth Stage)</div>
+        <div className="subtle">Step 7 - Create & Save Predictions (Seventh Stage)</div>
       </header>
 
       <section className="card">
@@ -115,6 +116,7 @@ export default function App() {
           onRefreshModel={generateMockModel}
         />
       </section>
+      <UpcomingRaceBar userPicks={toPodiumShape(picks)} modelPicks={modelPicks} />
       <PastResultsPanel />
     </div>
   );
