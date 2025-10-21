@@ -10,6 +10,7 @@ export default function PastResultsPanel() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [result, setResult] = useState(null);
+    const [resultReveal, setResultReveal] = useState(false);
 
     // Loading the seasons
     useEffect(() => {
@@ -47,6 +48,7 @@ export default function PastResultsPanel() {
         if (!season || !round) return;
         setLoading(true);
         setError("");
+        setResultReveal(false);
         (async () => {
             try {
                 const data = await fetchRaceResult(season, round);
@@ -106,29 +108,31 @@ export default function PastResultsPanel() {
                     </div>
 
                     {/* Show Podium for Selected Race */}
-                    <Podium picks={podiumPicks} label={"Show Race Results"}/>
+                    <Podium picks={podiumPicks} label={"Show Race Results"} setReveal={setResultReveal}/>
 
                     {/* The Top 10 List */}
-                    <div style={{marginTop: 12}}>
-                        <div className="helper" style={{ marginBottom: 6 }}>Top 10</div>
-                        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                        {result.top10.map(row => (
-                            <li key={row.pos} style={{
-                                display: "grid",
-                                gridTemplateColumns: "40px 1fr 140px 120px 70px",
-                                gap: "8px",
-                                padding: "6px 0",
-                                borderBottom: "1px solid var(--border)"
-                            }}>
-                                <span style={{ fontWeight: 700 }}>#{row.pos}</span>
-                                <span>{row.driver}</span>
-                                <span className="subtle" style={{ color: "var(--muted)" }}>{row.team}</span>
-                                <span className="subtle" style={{ color: "var(--muted)" }}>{row.status}</span>
-                                <span className="code" style={{ justifySelf: "end" }}>{row.code}</span>
-                            </li>
-                            ))}
-                        </ul>
-                    </div>
+                    {resultReveal &&
+                        <div style={{marginTop: 12}}>
+                            <div className="helper" style={{ marginBottom: 6 }}>Top 10</div>
+                            <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                            {result.top10.map(row => (
+                                <li key={row.pos} style={{
+                                    display: "grid",
+                                    gridTemplateColumns: "40px 1fr 140px 120px 70px",
+                                    gap: "8px",
+                                    padding: "6px 0",
+                                    borderBottom: "1px solid var(--border)"
+                                }}>
+                                    <span style={{ fontWeight: 700 }}>#{row.pos}</span>
+                                    <span>{row.driver}</span>
+                                    <span className="subtle" style={{ color: "var(--muted)" }}>{row.team}</span>
+                                    <span className="subtle" style={{ color: "var(--muted)" }}>{row.status}</span>
+                                    <span className="code" style={{ justifySelf: "end" }}>{row.code}</span>
+                                </li>
+                                ))}
+                            </ul>
+                        </div>
+                    }
                 </>
             )}
         </section>

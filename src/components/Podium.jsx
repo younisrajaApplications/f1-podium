@@ -6,7 +6,7 @@ import PodiumBlock from "./PodiumBlock";
  * Needs to take in the top 3 driver names
  */
 
-export default function Podium({picks, label, setReveal}) {
+export default function Podium({picks, label, reveal, setReveal}) {
     const [stage, setStage] = useState(0);
     // 0 = hidden, 1 = show 3rd place, 2 = show 2nd place and 3 = show first place
     const [isRevealing, setIsRevealing] = useState(false);
