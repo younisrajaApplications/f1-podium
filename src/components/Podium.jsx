@@ -33,28 +33,29 @@ export default function Podium({picks, label, reveal, setReveal}) {
     return (
         <div>
             <div className="controls">
-                <button className="btn primary" onClick={start} disabled={isRevealing}>{stage > 0 ? "Replay Reveal" : `${label}`}</button>
+                <button className="btn primary" onClick={start} disabled={isRevealing}>{reveal ? "Replay Reveal" : `${label}`}</button>
                 <button className="btn" onClick={reset} disabled={stage === 0}>Reset</button>
             </div>
 
             {/* Podium layout is 2|1|3 */}
-            <div className="podium">
-                {/* Second place reveal */}
-                {stage >= 2 && (
-                    <PodiumBlock place={2} data={picks[2]} delay={0.15} />)
-                }
+            {reveal &&
+                <div className="podium">
+                    {/* Second place reveal */}
+                    {stage >= 2 && (
+                        <PodiumBlock place={2} data={picks[2]} delay={0.15} />)
+                    }
 
-                {/* First place reveal */}
-                {stage >= 3 && (
-                    <PodiumBlock place={1} data={picks[1]} delay={0.3} />)
-                }
+                    {/* First place reveal */}
+                    {stage >= 3 && (
+                        <PodiumBlock place={1} data={picks[1]} delay={0.3} />)
+                    }
 
-                {/* Thrid place reveal */}
-                {stage >= 1 && (
-                    <PodiumBlock place={3} data={picks[3]} delay={0.0} />)
-                }        
-            </div>
-
+                    {/* Thrid place reveal */}
+                    {stage >= 1 && (
+                        <PodiumBlock place={3} data={picks[3]} delay={0.0} />)
+                    }        
+                </div>
+            }
         </div>
     );
 }

@@ -22,7 +22,7 @@ export default function ModelCompare({userPicks, modelPicks, onRefreshModel}) {
                     <h4 className="panel-title" style={{marginBottom: 10}}>
                         <span className="badge">Your Podium</span>
                     </h4>
-                    <Podium picks={userPicks} label={"Show My Podium"} setReveal={setUserReveal}/>
+                    <Podium picks={userPicks} label={"Show My Podium"} reveal={userReveal} setReveal={setUserReveal}/>
                 </div>
 
                 {/* Model Side */}
@@ -33,7 +33,7 @@ export default function ModelCompare({userPicks, modelPicks, onRefreshModel}) {
                         </h4>
                         <button className="btn" onClick={onRefreshModel}>Refresh model</button>
                     </div>
-                    <Podium picks={modelPicks} label={"Show Model Podium"} setReveal={setModelReveal}/>
+                    <Podium picks={modelPicks} label={"Show Model Podium"} reveal={modelReveal} setReveal={setModelReveal}/>
                 </div>
 
                 {/** 

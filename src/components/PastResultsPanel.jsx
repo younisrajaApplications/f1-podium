@@ -108,7 +108,7 @@ export default function PastResultsPanel() {
                     </div>
 
                     {/* Show Podium for Selected Race */}
-                    <Podium picks={podiumPicks} label={"Show Race Results"} setReveal={setResultReveal}/>
+                    <Podium picks={podiumPicks} label={"Show Race Results"} reveal={resultReveal} setReveal={setResultReveal}/>
 
                     {/* The Top 10 List */}
                     {resultReveal &&
