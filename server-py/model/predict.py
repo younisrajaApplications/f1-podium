@@ -16,7 +16,7 @@ OVERTAKE = {
     "monaco": 0.95, "hungaroring": 0.75, "imola": 0.70, "monza": 0.25,
     "spa": 0.35, "bahrain": 0.40, "jeddah": 0.30, "singapore": 0.80, "marina_bay": 0.80,
 }
-W = {"trackHistory": 0.40, "driverForm": 0.30, "constructor": 0.20, "qualiImpact": 0.10}
+W = {"trackHistory": 0.20, "driverForm": 0.50, "constructor": 0.10, "qualiImpact": 0.20}
 
 ## Turning the position into a score - higher score is better
 def pos_score(p: int) -> float:
@@ -32,7 +32,7 @@ def grid_factor(grid: int | None, overtake: float = 0.5) -> float:
     return base * (1.0 - 0.5 * overtake)
 
 ## Look at the driver's recent form, giving more weight to most recent
-def recent_form(results: List[Dict[str, Any]], N: int = 5) -> float:
+def recent_form(results: List[Dict[str, Any]], N: int = 2) -> float:
     take = results[-N:]
     num = 0.0
     den = 0.0

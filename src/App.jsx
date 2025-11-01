@@ -6,6 +6,7 @@ import PastResultsPanel from "./components/PastResultsPanel";
 import UpcomingRaceBar from "./components/UpcomingRaceBar";
 import { toPodiumShape, clear } from "./utils/podium";
 import { useRoster } from "./utils/roster";
+import { fetchModelPrediction } from "./api/predict";
 
 export default function App() {
 
@@ -14,11 +15,84 @@ export default function App() {
   
   //Picks for the different positions
   const [picks, setPicks] = useState({1: null, 2: null, 3: null,});
+  const userPodium = useMemo(() => toPodiumShape(picks), [picks]);
 
-  const userPodium = toPodiumShape(picks);
+  const [savedUser, setSavedUser] = useState(null);
+  const [savedModel, setSavedModel] = useState(null);
+  const [saveError, setSaveError] = useState("");
 
   // Model picks
   const [modelPicks, setModelPicks] = useState({ 1: null, 2: null, 3: null });
+  const [modelLoading, setModelLoading] = useState(false);
+  const [modelError, setModelError] = useState("");
+  const [modelMeta, setModelMeta] = useState(null);
+
+  const hasFull = useMemo(() => {
+    const p = userPodium;
+    return p && [1,2,3].every(pos => p[pos] && (p[pos].code || p[pos].name));
+  }, [userPodium]);
+
+  // Saving user prediction
+  async function onSaveUser() {
+    if (!hasFull) return;
+    setSaveError("");
+    try {
+      const res = await saveUpcoming("user", userPodium);
+      setSavedUser(userPodium);
+    } catch (e) {
+      console.error(e);
+      setSaveError("Couldn't save your prediction.");
+    }
+  }
+
+  // Saving model predictions
+  async function onSaveModel() {
+    if (![1,2,3].every(pos => modelPicks[pos])) return;
+    setSaveError("");
+    try {
+      const res = await saveUpcoming("model", modelPicks);
+      setSavedModel(modelPicks);
+    } catch (e) {
+      console.error(e);
+      setSaveError("Couldn't save model prediction.");
+    }
+  }
+
+  // Load existing predictions
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await listUpcoming();
+        const lastUser = data.items.find(x => x.kind === "user");
+        const lastModel = data.items.find(x => x.kind === "model");
+        if (lastUser) setSavedUser(lastUser.picks);
+        if (lastModel) setSavedModel(lastModel.picks);
+      } catch {}
+    })();
+  }, []);
+
+  // Generate model from backend API
+  const generateModelFromAPI = useCallback(async () => {
+    setModelLoading(true);
+    setModelError("");
+    try {
+      const out = await fetchModelPrediction("auto");
+      setModelPicks({
+        1: out.podium[1] || null,
+        2: out.podium[2] || null,
+        3: out.podium[3] || null,
+      });
+
+      setModelMeta({timeStamp: out.madeAt});
+    } catch (e) {
+      console.error(e);
+      setModelError("Couldn’t build a prediction right now.");
+    } finally {
+      setModelLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { generateModelFromAPI(); }, [generateModelFromAPI]);
 
   // Model picks generation - random distinct drivers for now
 
@@ -50,7 +124,7 @@ export default function App() {
     <div className="page">
       <header className="header">
         <div className="title">F1 Podium Predictor</div>
-        <div className="subtle">Step 7 - Create & Save Predictions (Seventh Stage)</div>
+        <div className="subtle">Step 8 - Backend Model To Predict Podium</div>
       </header>
 
       <section className="card">
@@ -72,7 +146,10 @@ export default function App() {
         <ModelCompare
           userPicks={userPodium}
           modelPicks={modelPicks}
-          onRefreshModel={generateMockModel}
+          onRefreshModel={generateModelFromAPI}
+          modelLoading={modelLoading}
+          modelError={modelError}
+          modelMeta={modelMeta?.timeStamp}
         />
       </section>
       <UpcomingRaceBar userPicks={toPodiumShape(picks)} modelPicks={modelPicks} />

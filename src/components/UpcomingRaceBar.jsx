@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchUpcomingRace } from "../api/ergast";
 import { savePrediction, getPredictions } from "../data/predictions";
+import { saveUpcoming, listUpcoming } from "../api/predict"; 
 
 export default function UpcomingRaceBar({userPicks, modelPicks}) {
     const [race, setRace] = useState(null);
@@ -39,33 +40,81 @@ export default function UpcomingRaceBar({userPicks, modelPicks}) {
         return <span className="badge" title={when}>{tag}</span>;
     }
 
-    const saveUser = () => {
-        if (!hasFull(userPicks)) return setError("Please select 1st, 2nd and 3rd before saving your prediction.");
-        const entry = savePrediction({ raceId: race.raceId, source: "user", podium: toSaveShape(userPicks)});
-        setSaved(entry);
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+        try {
+            const data = await listUpcoming(); // { raceId, raceName, items: [...] }
+            if (cancelled) return;
+            // pick the latest entries per kind (user/model)
+            const latestUser = data.items.find(x => x.kind === "user") || null;
+            const latestModel = data.items.find(x => x.kind === "model") || null;
+            setSaved({
+            user: latestUser,
+            model: latestModel,
+            });
+        } catch (e) {
+            if (!cancelled) setError("Couldn't load saved predictions.");
+            console.error(e);
+        }
+        })();
+        return () => { cancelled = true; };
+    }, []);
+
+    const saveUser = async () => {
+        if (!hasFull(userPicks)) {
+            setError("Please select 1st, 2nd and 3rd before saving your prediction.");
+            return;
+        }
         setError("");
+        try {
+            await saveUpcoming("user", toSaveShape(userPicks));
+            // re-fetch latest
+            const data = await listUpcoming();
+            const latestUser = data.items.find(x => x.kind === "user") || null;
+            setSaved(s => ({ ...s, user: latestUser }));
+        } catch (e) {
+            console.error(e);
+            setError("Couldn't save your prediction.");
+        }
     };
 
-    const saveModel = () => {
-        if (!hasFull(modelPicks)) return setError("Please run the model prediction.");
-        const entry = savePrediction({ raceId: race.raceId, source: "model", podium: toSaveShape(modelPicks), modelVersion: "v1" });
-        setSaved(entry);
+    const saveModel = async () => {
+        if (!hasFull(modelPicks)) {
+            setError("Please run the model prediction.");
+            return;
+        }
         setError("");
+        try {
+            await saveUpcoming("model", toSaveShape(modelPicks));
+            // re-fetch latest
+            const data = await listUpcoming();
+            const latestModel = data.items.find(x => x.kind === "model") || null;
+            setSaved(s => ({ ...s, model: latestModel }));
+        } catch (e) {
+            console.error(e);
+            setError("Couldn't save model prediction.");
+        }
     };
 
     const renderSavedLine = (label, slot) => {
         const rec = saved?.[slot];
         if (!rec) return <div className="helper">No {label.toLowerCase()} prediction saved yet.</div>;
 
-        const p = rec.podium || {};
+        // backend returns: { id, raceId, raceName, mode, kind, picks, madeAt }
+        const p = rec.picks || {};
         const n = (x) => x?.name || x?.code || "—";
+        const madeAt = rec.madeAt ? new Date(rec.madeAt).toLocaleString() : "—";
+
         return (
         <div className="helper">
             <strong>{label} Prediction:</strong>{" "}
-            1. {n(p[1])} &nbsp; 2. {n(p[2])} &nbsp; 3. {n(p[3])} &nbsp; {badge(rec.madeAt)}
+            1. {n(p["1"])} &nbsp; 2. {n(p["2"])} &nbsp; 3. {n(p["3"])} &nbsp; 
+            <span className="badge" style={{ marginLeft: 6 }}>Saved {madeAt}</span>
+            {badge(rec.madeAt)}
         </div>
         );
-    }
+    };
 
     if (!race) {
         return (

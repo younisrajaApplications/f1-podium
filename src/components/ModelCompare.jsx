@@ -8,7 +8,7 @@ import Podium from "./Podium";
  * modelPicks
  */
 
-export default function ModelCompare({userPicks, modelPicks, onRefreshModel}) {
+export default function ModelCompare({userPicks, modelPicks, onRefreshModel, modelLoading, modelError}) {
     const [userReveal, setUserReveal] = useState(false);
     const [modelReveal, setModelReveal] = useState(false);
 
@@ -31,7 +31,8 @@ export default function ModelCompare({userPicks, modelPicks, onRefreshModel}) {
                         <h4 className="panel-title" style={{ margin: 0 }}>
                             <span className="badge"> Model prediction</span>
                         </h4>
-                        <button className="btn" onClick={onRefreshModel}>Refresh model</button>
+                        <button className="btn" onClick={onRefreshModel} disabled={modelLoading}>{modelLoading ? "Refreshing..." : "Refresh Model"}</button>
+                        {modelError && <div className="helper" style={{marginTop:8}}>{modelError}</div>}
                     </div>
                     <Podium picks={modelPicks} label={"Show Model Podium"} reveal={modelReveal} setReveal={setModelReveal}/>
                 </div>
