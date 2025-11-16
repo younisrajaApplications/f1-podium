@@ -124,7 +124,7 @@ export default function App() {
     <div className="page">
       <header className="header">
         <div className="title">F1 Podium Predictor</div>
-        <div className="subtle">Step 8 - Backend Model To Predict Podium</div>
+        <div className="subtle"> Step 9 - Persistence Layer: Optimistic UI, Caching & DB Sync </div>
       </header>
 
       <section className="card">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchUpcomingRace } from "../api/ergast";
 import { savePrediction, getPredictions } from "../data/predictions";
+import { readCache, writeCache, pickLatest } from "../utils/predictionCache";
 import { saveUpcoming, listUpcoming } from "../api/predict"; 
 
 export default function UpcomingRaceBar({userPicks, modelPicks}) {
@@ -41,25 +42,42 @@ export default function UpcomingRaceBar({userPicks, modelPicks}) {
     }
 
     useEffect(() => {
+        if (!race?.raceId) return;
+        setError("");
+
+        // 1) Local first (instant UX)
+        const localUser  = readCache(race.raceId, "user");
+        const localModel = readCache(race.raceId, "model");
+        if (localUser || localModel) {
+            setSaved({ user: localUser, model: localModel });
+        } else {
+            setSaved({ user: null, model: null });
+        }
+
         let cancelled = false;
         (async () => {
         try {
             const data = await listUpcoming(); // { raceId, raceName, items: [...] }
             if (cancelled) return;
+
             // pick the latest entries per kind (user/model)
-            const latestUser = data.items.find(x => x.kind === "user") || null;
-            const latestModel = data.items.find(x => x.kind === "model") || null;
-            setSaved({
-            user: latestUser,
-            model: latestModel,
-            });
+            const serverUser = data.items.find(x => x.kind === "user") || null;
+            const serverModel = data.items.find(x => x.kind === "model") || null;
+
+            const latestUser = pickLatest(localUser, serverUser);
+            const latestModel = pickLatest(localModel, serverModel);
+
+            if (latestUser)  writeCache(race.raceId, "user",  latestUser);
+            if (latestModel) writeCache(race.raceId, "model", latestModel);
+
+            setSaved({ user: latestUser, model: latestModel });
         } catch (e) {
             if (!cancelled) setError("Couldn't load saved predictions.");
             console.error(e);
         }
         })();
         return () => { cancelled = true; };
-    }, []);
+    }, [race?.raceId]);
 
     const saveUser = async () => {
         if (!hasFull(userPicks)) {
@@ -67,11 +85,26 @@ export default function UpcomingRaceBar({userPicks, modelPicks}) {
             return;
         }
         setError("");
+
+        const optimistic = {
+            kind: "user",
+            raceId: race.raceId,
+            raceName: race.name,
+            picks: toSaveShape(userPicks),   // ensure keys "1","2","3"
+            madeAt: new Date().toISOString()
+        };
+
+        // Write to cache & UI immediately
+        writeCache(race.raceId, "user", optimistic);
+        setSaved(s => ({ ...s, user: optimistic }));
+
         try {
-            await saveUpcoming("user", toSaveShape(userPicks));
+            await saveUpcoming("user", optimistic.picks);
             // re-fetch latest
             const data = await listUpcoming();
-            const latestUser = data.items.find(x => x.kind === "user") || null;
+            const serverUser = data.items.find(x => x.kind === "user") || null;
+            const latestUser = pickLatest(optimistic,serverUser)
+            if (latestUser) writeCache(race.raceId, "user", latestUser);
             setSaved(s => ({ ...s, user: latestUser }));
         } catch (e) {
             console.error(e);
@@ -84,12 +117,27 @@ export default function UpcomingRaceBar({userPicks, modelPicks}) {
             setError("Please run the model prediction.");
             return;
         }
+
         setError("");
+
+        const optimistic = {
+            kind: "model",
+            raceId: race.raceId,
+            raceName: race.name,
+            picks: toSaveShape(modelPicks),
+            madeAt: new Date().toISOString()
+        };
+
+        writeCache(race.raceId, "model", optimistic);
+        setSaved(s => ({ ...s, model: optimistic }));
+
         try {
-            await saveUpcoming("model", toSaveShape(modelPicks));
+            await saveUpcoming("model", optimistic.picks);
             // re-fetch latest
             const data = await listUpcoming();
-            const latestModel = data.items.find(x => x.kind === "model") || null;
+            const serverModel = data.items.find(x => x.kind === "model") || null;
+            const latestModel = pickLatest(serverModel, optimistic);
+            if (latestModel) writeCache(race.raceId, "model", latestModel);
             setSaved(s => ({ ...s, model: latestModel }));
         } catch (e) {
             console.error(e);
